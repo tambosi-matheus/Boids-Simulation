@@ -1,0 +1,16 @@
+{
+"companyName": "DefaultCompany",
+"productName": "Boids",
+"productVersion": "1",
+"dataUrl": "a.data.unityweb",
+"wasmCodeUrl": "a.wasm.code.unityweb",
+"wasmFrameworkUrl": "a.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#D4D4D4",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.3.0f6"
+}
