@@ -60,7 +60,7 @@ public class Object : MonoBehaviour
             transform.up = rb.velocity;
         }
         if (!rend.isVisible)
-            rb.velocity = -rb.velocity;
+            rb.velocity = (destination.position - transform.position).normalized * maxSpeed;
     }
 
     private List<GameObject> CheckRange()
