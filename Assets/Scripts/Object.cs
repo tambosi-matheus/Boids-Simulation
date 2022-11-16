@@ -1,26 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Object : MonoBehaviour
 {
     public string group;
 
-    Transform destination;
-
-    Rigidbody2D rb;
-    Renderer rend;
-    private Vector2 aceleration;
+    [SerializeField] private LineRenderer speedLine, accelLine;
+    private Rigidbody2D rb;
+    [SerializeField] private Vector2 aceleration;
     public float sightRange;
-    private List<GameObject> peersInRange;
+    private List<Object> peersInRange;
 
-    public float maxSpeed;
-    public float maxAceleration;
-    public float destinationSpeed;
-    public float separationStrength;
-    public float alignmentStrength;
-    public float cohesionStrength;
+    public float maxSpeed, maxAceleration, 
+        separationStrength, alignmentStrength, cohesionStrength;
+
+    public bool onScreen { get; private set; } = true;
+    public bool showVel = false, showAccel = false;
 
 
 
@@ -28,52 +26,72 @@ public class Object : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        rend = GetComponent<Renderer>();
 
         transform.position = new Vector2(Random.Range(-50, 50), Random.Range(-50, 50));
-        rb.velocity = Vector2.up * Random.Range(-30, 30) + Vector2.right * Random.Range(-30, 30);
-        destination = GameObject.FindGameObjectWithTag("Destination").transform;        
+        rb.velocity = Vector2.up * Random.Range(-30, 30) + Vector2.right * Random.Range(-30, 30);   
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        DrawLines();
         peersInRange = CheckRange();
-        aceleration = Alignment() * alignmentStrength + Separation() * separationStrength + Cohesion() * cohesionStrength ;
-        aceleration += (Vector2)((destination.position - transform.position).normalized * destinationSpeed) / 8;
-
-        if (aceleration.magnitude > maxAceleration)        
+        aceleration = 
+            -(Vector2)transform.position.normalized +
+            Alignment() * alignmentStrength + 
+            Separation() * separationStrength + 
+            Cohesion() * cohesionStrength;
+        aceleration = aceleration.normalized * 50;
+        
+        if (aceleration.magnitude > maxAceleration)
             aceleration = aceleration.normalized * maxAceleration;  
         
         if (aceleration.magnitude > 0.1)                  
-            rb.velocity += aceleration;        
-        
-        
-        if(rb.velocity.magnitude > maxSpeed)
-        {
+            rb.velocity += aceleration * Time.deltaTime;        
+                
+        if(rb.velocity.magnitude > maxSpeed)        
             rb.velocity = rb.velocity.normalized * maxSpeed;
-        }
+        
 
-        // make the object face the velocity vector
+        // Make the object face the velocity vector
         if (rb.velocity != Vector2.zero)
         {
-            transform.up = rb.velocity;
+            transform.right = rb.velocity;
         }
-        if (!rend.isVisible)
-            rb.velocity = (destination.position - transform.position).normalized * maxSpeed;
+        //if (!rend.isVisible)
+        //    rb.velocity = (destination.position - transform.position).normalized * maxSpeed;
     }
 
-    private List<GameObject> CheckRange()
+    private void DrawLines()
     {
-        List<GameObject> inRange = new List<GameObject>();
-
-        foreach (GameObject obj in Pooler.Instance.pools[group])
+        if (showVel && rb.velocity.magnitude > 0.1f)
         {
-            if (obj != gameObject && Vector2.Distance(transform.position, obj.transform.position) <= sightRange)
-            {
+            speedLine.enabled = true;
+            speedLine.SetPosition(0, transform.position);
+            speedLine.SetPosition(1,
+                (Vector2)transform.position + rb.velocity.normalized * rb.velocity.magnitude / 5);
+        }
+        else
+            speedLine.enabled = false;
+        if (showAccel && aceleration.magnitude > 0.1f)
+        {
+            accelLine.enabled = true;
+            accelLine.SetPosition(0, transform.position);
+            accelLine.SetPosition(1, (Vector2)transform.position + aceleration.normalized * 5);
+        }
+        else
+            accelLine.enabled = false;
+    }
 
-                inRange.Add(obj);
-            }
+    private List<Object> CheckRange()
+    {
+        var inRange = new List<Object>();
+
+        foreach (Object obj in Pooler.Instance.pools[group])
+        {
+            if (obj == this) continue;
+            if (onScreen && Vector2.Distance(transform.position, obj.transform.position) <= sightRange)            
+                inRange.Add(obj);            
         }
 
         return inRange;
@@ -84,14 +102,14 @@ public class Object : MonoBehaviour
     {
         Vector2 separation = new Vector2(0, 0);
 
-        foreach(GameObject peer in peersInRange)
+        foreach(Object peer in peersInRange)
         {
-            Vector2 vec = (Vector2)(transform.position - peer.transform.position);
+            var vec = (Vector2)(transform.position - peer.transform.position);
             vec /= Vector2.Distance(transform.position, peer.transform.position);
             separation += vec;
         }
-        
-        separation /= (peersInRange.Count);
+
+        separation = separation.normalized;
         
         return separation;
     }
@@ -100,39 +118,50 @@ public class Object : MonoBehaviour
     {
         Vector2 alignment = new Vector2(0, 0);
 
-        foreach (GameObject peer in peersInRange)
+        foreach (Object peer in peersInRange)
         {
-            Vector2 vec;
-            vec = (Vector2)(peer.GetComponent<Rigidbody2D>().velocity);
+            var vec = (Vector2)(peer.GetComponent<Rigidbody2D>().velocity);
             vec /= Vector2.Distance(transform.position, peer.transform.position);
             alignment += vec;
         }
 
-        alignment /= peersInRange.Count;
+        alignment = alignment.normalized;
 
         return alignment;
     }
 
     private Vector2 Cohesion()
     {
-        Vector2 cohesion = new Vector2(0, 0);
+        var cohesion = new Vector2(0, 0);
 
-        foreach (GameObject peer in peersInRange)
+        foreach (Object peer in peersInRange)
         {
-            Vector2 vec;
-            vec = (Vector2)(peer.transform.position - transform.position);
+            var vec = (Vector2)(peer.transform.position - transform.position);
             vec /= Vector2.Distance(transform.position, peer.transform.position);
             cohesion += vec;
         }
 
-        cohesion /= peersInRange.Count;
+        cohesion = cohesion.normalized;
 
         return cohesion;
+    }     
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!collision.gameObject.tag.Equals("Boid"))
+        {
+            //rb.velocity = -rb.velocity;
+            onScreen = false;
+            transform.position = -transform.position;
+        }
+            
     }
 
-
-    private void OnDrawGizmos()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        Gizmos.DrawWireSphere(transform.position, sightRange);
+        if (!collision.gameObject.tag.Equals("Boid"))
+        {
+            onScreen = true;
+        }
     }
 }

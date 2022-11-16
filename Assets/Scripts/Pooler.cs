@@ -1,81 +1,61 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Pooler : MonoBehaviour
 {
-    [SerializeField]
-    public GameObject genericPrefab;
-
-    public GroupPool[] groupsPools;
-
-    public Dictionary<string, List<GameObject>> pools = new Dictionary<string, List<GameObject>>();
-
-    [System.Serializable]
-    public class GroupPool
-    {
-        public string name;
-        public Color color;
-        public int quantity;
-
-        [HideInInspector]
-        public Transform parent;
-
-        public float sightRange = 60;
-        public float maxSpeed = 25;
-        public float maxAceleration;
-        public float separationStrength = 1;
-        public float alignmentStrength = .1f;
-        public float cohesionStrength = 1;
-        public float destinationSpeed = 1;
-    }
-
-    #region Singleton
-
     public static Pooler Instance;
+
+    private InGameManager ingameManager;
+    [SerializeField] private GameObject prefab;
+    private Vector3 spawnPosition;
+    public Dictionary<string, List<Object>> pools = new Dictionary<string, List<Object>>();
 
     private void Awake()
     {
         Instance = this;
+        
+        spawnPosition = 
+            Camera.main.ScreenToWorldPoint(new Vector2(Screen.width / 2, Screen.height / 2));
+        spawnPosition.z = 0;        
     }
 
-    #endregion
+
 
     private void Start()
     {
+        ingameManager = InGameManager.Instance;
         CreatePools();
     }
 
 
     private void CreatePools()
     {
-        foreach (GroupPool p in groupsPools)
+        foreach (InGameManager.Group group in ingameManager.groups)
         {
-            List<GameObject> list = new List<GameObject>();
-            GameObject parent = new GameObject();
-            parent.transform.SetParent(GameObject.FindGameObjectWithTag("Respawn").transform);
-            parent.name = p.name;
-            p.parent = parent.transform;
-            for (int i = 0; i < p.quantity; i++)
+            var list = new List<Object>();
+            var parent = new GameObject();
+            parent.name = group.name;
+            group.parent = parent;
+            parent.SetActive(false);
+            for (int i = 0; i < group.quantity; i++)
             {
-                GameObject obj = Instantiate(genericPrefab);
-                obj.transform.SetParent(p.parent);
-                obj.GetComponent<Object>().group = p.name;
-                obj.GetComponent<Renderer>().material.color = p.color;
-                Object objScript = obj.GetComponent<Object>();
-                objScript.maxSpeed = p.maxSpeed;
-                objScript.sightRange = p.sightRange;
-                objScript.alignmentStrength = p.alignmentStrength;
-                objScript.cohesionStrength = p.cohesionStrength;
-                objScript.separationStrength = p.separationStrength;
-                objScript.maxAceleration = p.maxAceleration;
-                objScript.destinationSpeed = p.destinationSpeed;
+                GameObject obj = Instantiate(prefab);
+                obj.transform.SetParent(group.parent.transform);
+                obj.GetComponent<SpriteRenderer>().color = group.color;
+                Object cell = obj.GetComponent<Object>();
+                cell.group = group.name;
+                cell.maxSpeed = group.maxSpeed;
+                cell.sightRange = group.sight;
+                cell.alignmentStrength = group.alignment;
+                cell.cohesionStrength = group.cohesion;
+                cell.separationStrength = group.separation;
+                cell.maxAceleration = group.maxAcceleration;
 
 
-                obj.SetActive(false);
-                list.Add(obj);
+                //obj.SetActive(false);
+                list.Add(cell);
             }
-            pools.Add(p.name, list);
+            pools.Add(group.name, list);
         }
     }
 
