@@ -37,7 +37,7 @@ public class Object : MonoBehaviour
         DrawLines();
         peersInRange = CheckRange();
         aceleration = 
-            -(Vector2)transform.position.normalized +
+            -(Vector2)transform.position.normalized / 100 +
             Alignment() * alignmentStrength + 
             Separation() * separationStrength + 
             Cohesion() * cohesionStrength;

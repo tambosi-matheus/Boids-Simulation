@@ -25,6 +25,7 @@ public class Pooler : MonoBehaviour
     {
         ingameManager = InGameManager.Instance;
         CreatePools();
+        ingameManager.ChangeUnityStats("Green", ingameManager.groups[0]);
     }
 
 
@@ -50,9 +51,6 @@ public class Pooler : MonoBehaviour
                 cell.cohesionStrength = group.cohesion;
                 cell.separationStrength = group.separation;
                 cell.maxAceleration = group.maxAcceleration;
-
-
-                //obj.SetActive(false);
                 list.Add(cell);
             }
             pools.Add(group.name, list);

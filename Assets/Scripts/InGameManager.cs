@@ -48,7 +48,29 @@ public class InGameManager : MonoBehaviour
                 parent.SetActive(value);
             }
         }
+    }    
+
+    private void Awake()
+    {
+        Instance = this;
+        box.size = new Vector2(Camera.main.pixelWidth / 5.3f, Camera.main.pixelRect.height / 5.3f);
     }
+
+    void Start()
+    {
+        pooler = Pooler.Instance;
+        uiManager = UIManager.Instance;        
+
+        //ApplySliderValue("Green");
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+            uiManager.ChangeUIState();
+    }
+
+    #region Group Management
 
     public Group GetGroup(string name) => Array.Find(groups, g => g.name == name);
 
@@ -75,25 +97,6 @@ public class InGameManager : MonoBehaviour
         return values;
     }
 
-    private void Awake()
-    {
-        Instance = this;
-        box.size = new Vector2(Camera.main.pixelWidth / 5.3f, Camera.main.pixelRect.height / 5.3f);
-    }
-
-    void Start()
-    {
-        pooler = Pooler.Instance;
-        uiManager = UIManager.Instance;
-        ApplySliderValue(groupList[0]);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Tab))
-            uiManager.ChangeUIState();
-    }
-
     public string GetNextGroup(int step)
     {
         activeGroup += step;
@@ -102,11 +105,13 @@ public class InGameManager : MonoBehaviour
         return groupList[activeGroup];
     }
 
+    #endregion
+    
     public void ApplySliderValue(string name)
     {
         var group = Array.Find(groups, g => g.name.Equals(name));
 
-        if (uiManager == null) return;
+        //if (uiManager == null) return;
         group.alignment = uiManager.alignmentSlider.value;
         group.cohesion = uiManager.cohesionSlider.value;
         group.separation = uiManager.separationSlider.value;

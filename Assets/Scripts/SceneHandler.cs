@@ -2,9 +2,7 @@
 using UnityEngine.SceneManagement;
 
 public class SceneHandler : MonoBehaviour
-{
-    private void Awake() => DontDestroyOnLoad(this);    
-
+{       
     public string sceneToLoad;
 
     public void GoToScene() => SceneManager.LoadScene(sceneToLoad);
