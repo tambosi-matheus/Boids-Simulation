@@ -1,12 +1,11 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
     public InGameManager manager;
-
 
     [SerializeField] private Canvas canvas;
     public TextMeshProUGUI groupName;
@@ -34,7 +33,7 @@ public class UIManager : MonoBehaviour
     public void ChangeUIState() => canvas.enabled = !canvas.enabled;
 
     public void UpdateUI()
-    {        
+    {
         alignmentText.SetText(alignmentSlider.value.ToString("F2"));
         cohesionText.SetText(cohesionSlider.value.ToString("F2"));
         separationText.SetText(separationSlider.value.ToString("F2"));
@@ -55,19 +54,24 @@ public class UIManager : MonoBehaviour
             activeStatus.SetText("Enable Group");
     }
 
+    // Very dirty way to get data, but every time a slider has its value changed
+    // the engine calls the attached script (UpdateUI()) before all values are set
+    // then the sliders change the base class values before it sets the slider
+    // didn't find a better way to solve other then refactoring the whole code
     public void GetGroupData()
     {
-        var group = manager.GetGroup(groupName.text);
-        alignmentSlider.value = group.alignment;
-        cohesionSlider.value = group.cohesion;
-        separationSlider.value = group.separation;
-        sightSlider.value = group.sight;
-        maxSpeedSlider.value = group.maxSpeed;
-        acceleractionSlider.value = group.maxAcceleration;
-        showVel.isOn = group.showVel;
-        showAccel.isOn = group.showAccel;
+        var values = manager.GetGroupSliderValues(groupName.text);
+        var booleans = manager.GetGroupBooleands(groupName.text);
+        alignmentSlider.value = values[0];
+        cohesionSlider.value = values[1];
+        separationSlider.value = values[2];
+        sightSlider.value = values[3];
+        maxSpeedSlider.value = values[4];
+        acceleractionSlider.value = values[5];
+        showVel.isOn = booleans[0];
+        showAccel.isOn = booleans[1];
 
-        if (group.active)
+        if (booleans[2])
             activeStatus.SetText("Disable Group");
         else
             activeStatus.SetText("Enable Group");
@@ -78,6 +82,6 @@ public class UIManager : MonoBehaviour
         var group = manager.GetNextGroup(index);
         groupName.SetText(group);
         GetGroupData();
-        //UpdateUI();
+        UpdateUI();
     }
 }

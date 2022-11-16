@@ -14,9 +14,9 @@ public class InGameManager : MonoBehaviour
         1, // Alignment
         1, // Cohesion
         1, // Separation
-        10, // Sight
-        5, // Max Speed
-        10 // Max Acceleration
+        100, // Sight
+        50, // Max Speed
+        100 // Max Acceleration
     };
 
     public string[] groupList =  new string[3] {"Green", "Red", "Blue"};    
@@ -30,7 +30,7 @@ public class InGameManager : MonoBehaviour
     public class Group
     {        
         public string name;
-        [HideInInspector] public GameObject parent;
+        public GameObject parent;
         public Color color;
         public int quantity;
         public float
@@ -52,11 +52,32 @@ public class InGameManager : MonoBehaviour
 
     public Group GetGroup(string name) => Array.Find(groups, g => g.name == name);
 
+    public float[] GetGroupSliderValues(string name)
+    {
+        var values = new float[6];
+        var group = Array.Find(groups, g => g.name == name);
+        values[0] = group.alignment;
+        values[1] = group.cohesion;
+        values[2] = group.separation;
+        values[3] = group.sight;
+        values[4] = group.maxSpeed;
+        values[5] = group.maxAcceleration;
+        return values;
+    }
+
+    public bool[] GetGroupBooleands(string name)
+    {
+        var values = new bool[3];
+        var group = Array.Find(groups, g => g.name == name);
+        values[0] = group.showVel;
+        values[1] = group.showAccel;
+        values[2] = group.active;
+        return values;
+    }
+
     private void Awake()
     {
-        Instance = this;        
-        DontDestroyOnLoad(gameObject);  
-        
+        Instance = this;
         box.size = new Vector2(Camera.main.pixelWidth / 5.3f, Camera.main.pixelRect.height / 5.3f);
     }
 
@@ -104,12 +125,12 @@ public class InGameManager : MonoBehaviour
 
         foreach(Object obj in group)
         {
-            obj.alignmentStrength = groupInfo.alignment;
-            obj.cohesionStrength = groupInfo.cohesion;
-            obj.separationStrength = groupInfo.separation;
-            obj.sightRange = groupInfo.sight;
-            obj.maxSpeed = groupInfo.maxSpeed;
-            obj.maxAceleration = groupInfo.maxAcceleration;
+            obj.alignmentStrength = groupInfo.alignment * weights[0];
+            obj.cohesionStrength = groupInfo.cohesion * weights[1];
+            obj.separationStrength = groupInfo.separation * weights[2];
+            obj.sightRange = groupInfo.sight * weights[3];
+            obj.maxSpeed = groupInfo.maxSpeed * weights[4];
+            obj.maxAceleration = groupInfo.maxAcceleration * weights[5];
             obj.showVel = groupInfo.showVel;
             obj.showAccel = groupInfo.showAccel;
         }

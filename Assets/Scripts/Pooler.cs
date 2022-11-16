@@ -16,7 +16,7 @@ public class Pooler : MonoBehaviour
         
         spawnPosition = 
             Camera.main.ScreenToWorldPoint(new Vector2(Screen.width / 2, Screen.height / 2));
-        spawnPosition.z = 0;        
+        spawnPosition.z = 0;
     }
 
 
