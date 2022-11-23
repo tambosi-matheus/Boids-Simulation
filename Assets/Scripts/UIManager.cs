@@ -7,16 +7,16 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance { get; private set; }
     public InGameManager manager;
 
-    [SerializeField] private Canvas canvas;
+    [SerializeField] private GameObject menu;
     public TextMeshProUGUI groupName;
     public Slider 
         alignmentSlider, cohesionSlider, separationSlider, 
-        sightSlider, maxSpeedSlider, acceleractionSlider;
+        sightSlider, sightRangeSlider, maxSpeedSlider, acceleractionSlider;
     [SerializeField] private TextMeshProUGUI 
         alignmentText, cohesionText, separationText, 
-        sightText, maxSpeedText, accelerationText;
+        sightText, sightRangeText, maxSpeedText, accelerationText;
     public TextMeshProUGUI activeStatus;
-    public Toggle showVel, showAccel;
+    public Toggle showVel, showAccel, showSight;
 
     private void Awake()
     {
@@ -30,7 +30,8 @@ public class UIManager : MonoBehaviour
         OnSetGroupActive();
     }
 
-    public void ChangeUIState() => canvas.enabled = !canvas.enabled;
+    public void ChangeUIState() => menu.SetActive(!menu.activeSelf);
+    
 
     public void UpdateUI()
     {
@@ -38,6 +39,7 @@ public class UIManager : MonoBehaviour
         cohesionText.SetText(cohesionSlider.value.ToString("F2"));
         separationText.SetText(separationSlider.value.ToString("F2"));
         sightText.SetText(sightSlider.value.ToString("F2"));
+        sightRangeText.SetText(sightRangeSlider.value.ToString("F2"));
         maxSpeedText.SetText(maxSpeedSlider.value.ToString("F2"));
         accelerationText.SetText(acceleractionSlider.value.ToString("F2"));
         
@@ -66,12 +68,14 @@ public class UIManager : MonoBehaviour
         cohesionSlider.value = values[1];
         separationSlider.value = values[2];
         sightSlider.value = values[3];
-        maxSpeedSlider.value = values[4];
-        acceleractionSlider.value = values[5];
+        sightRangeSlider.value = values[4];
+        maxSpeedSlider.value = values[5];
+        acceleractionSlider.value = values[6];
         showVel.isOn = booleans[0];
         showAccel.isOn = booleans[1];
+        showSight.isOn = booleans[2];
 
-        if (booleans[2])
+        if (booleans[3])
             activeStatus.SetText("Disable Group");
         else
             activeStatus.SetText("Enable Group");

@@ -7,16 +7,11 @@ public class Pooler : MonoBehaviour
 
     private InGameManager ingameManager;
     [SerializeField] private GameObject prefab;
-    private Vector3 spawnPosition;
     public Dictionary<string, List<Object>> pools = new Dictionary<string, List<Object>>();
 
     private void Awake()
     {
         Instance = this;
-        
-        spawnPosition = 
-            Camera.main.ScreenToWorldPoint(new Vector2(Screen.width / 2, Screen.height / 2));
-        spawnPosition.z = 0;
     }
 
 
@@ -42,11 +37,11 @@ public class Pooler : MonoBehaviour
             {
                 GameObject obj = Instantiate(prefab);
                 obj.transform.SetParent(group.parent.transform);
-                obj.GetComponent<SpriteRenderer>().color = group.color;
+                obj.GetComponentInChildren<SpriteRenderer>().color = group.color;
                 Object cell = obj.GetComponent<Object>();
                 cell.group = group.name;
                 cell.maxSpeed = group.maxSpeed;
-                cell.sightRange = group.sight;
+                cell.sightRange = group.sightRange;
                 cell.alignmentStrength = group.alignment;
                 cell.cohesionStrength = group.cohesion;
                 cell.separationStrength = group.separation;

@@ -9,14 +9,22 @@ public class InGameManager : MonoBehaviour
     private Pooler pooler;
     [SerializeField] private BoxCollider2D box;
 
-    public static int[] weights = new int[6]
+    // Screen
+    public static Vector2 boidBounds, gameSize;
+    public static float distanceToScreenBound;
+
+    // Stars Background
+    [SerializeField] private ParticleSystem stars;
+
+    public static int[] weights = new int[7]
     {
         1, // Alignment
         1, // Cohesion
         1, // Separation
-        100, // Sight
-        50, // Max Speed
-        100 // Max Acceleration
+        100, // Sight Range
+        1, // Sight Angle
+        100, // Max Speed
+        400 // Max Acceleration
     };
 
     public string[] groupList =  new string[3] {"Green", "Red", "Blue"};    
@@ -35,9 +43,9 @@ public class InGameManager : MonoBehaviour
         public int quantity;
         public float
             alignment, cohesion,
-            separation, sight,
+            separation, sightRange, sightAngle,
             maxSpeed, maxAcceleration;
-        public bool showVel, showAccel;
+        public bool showVel, showAccel, showSight;
         private bool m_active;
         public bool active
         {
@@ -53,15 +61,19 @@ public class InGameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        box.size = new Vector2(Camera.main.pixelWidth / 5.3f, Camera.main.pixelRect.height / 5.3f);
+        gameSize = new Vector2(Camera.main.aspect * 200, 200);
+        boidBounds = gameSize * 0.9f;
+
+        var starsShape = stars.shape;
+        starsShape.scale = (Vector3)gameSize * 3;
+        stars.emission.SetBurst(0, new ParticleSystem.Burst(0f, gameSize.y * 20));
+        stars.Play();
     }
 
     void Start()
     {
         pooler = Pooler.Instance;
-        uiManager = UIManager.Instance;        
-
-        //ApplySliderValue("Green");
+        uiManager = UIManager.Instance;
     }
 
     private void Update()
@@ -76,24 +88,26 @@ public class InGameManager : MonoBehaviour
 
     public float[] GetGroupSliderValues(string name)
     {
-        var values = new float[6];
+        var values = new float[7];
         var group = Array.Find(groups, g => g.name == name);
         values[0] = group.alignment;
         values[1] = group.cohesion;
         values[2] = group.separation;
-        values[3] = group.sight;
-        values[4] = group.maxSpeed;
-        values[5] = group.maxAcceleration;
+        values[3] = group.sightRange;
+        values[4] = group.sightAngle;
+        values[5] = group.maxSpeed;
+        values[6] = group.maxAcceleration;
         return values;
     }
 
     public bool[] GetGroupBooleands(string name)
     {
-        var values = new bool[3];
+        var values = new bool[4];
         var group = Array.Find(groups, g => g.name == name);
         values[0] = group.showVel;
         values[1] = group.showAccel;
-        values[2] = group.active;
+        values[2] = group.showSight;
+        values[3] = group.active;
         return values;
     }
 
@@ -115,11 +129,13 @@ public class InGameManager : MonoBehaviour
         group.alignment = uiManager.alignmentSlider.value;
         group.cohesion = uiManager.cohesionSlider.value;
         group.separation = uiManager.separationSlider.value;
-        group.sight = uiManager.sightSlider.value;
+        group.sightRange = uiManager.sightSlider.value;
+        group.sightAngle = uiManager.sightRangeSlider.value;
         group.maxSpeed = uiManager.maxSpeedSlider.value;
         group.maxAcceleration = uiManager.acceleractionSlider.value;
         group.showVel = uiManager.showVel.isOn;
         group.showAccel = uiManager.showAccel.isOn;
+        group.showSight = uiManager.showSight.isOn;
 
         ChangeUnityStats(name, group);
     }
@@ -133,11 +149,14 @@ public class InGameManager : MonoBehaviour
             obj.alignmentStrength = groupInfo.alignment * weights[0];
             obj.cohesionStrength = groupInfo.cohesion * weights[1];
             obj.separationStrength = groupInfo.separation * weights[2];
-            obj.sightRange = groupInfo.sight * weights[3];
-            obj.maxSpeed = groupInfo.maxSpeed * weights[4];
-            obj.maxAceleration = groupInfo.maxAcceleration * weights[5];
+            obj.sightImageSize.sizeDelta = new Vector2(groupInfo.sightRange * 2 * weights[3], groupInfo.sightRange * 2 * weights[3]);
+            obj.sightRange = groupInfo.sightRange * weights[3];
+            obj.sightAngle = groupInfo.sightAngle * weights[4];
+            obj.maxSpeed = groupInfo.maxSpeed * weights[5];
+            obj.maxAceleration = groupInfo.maxAcceleration * weights[6];
             obj.showVel = groupInfo.showVel;
             obj.showAccel = groupInfo.showAccel;
+            obj.showSight = groupInfo.showSight;
         }
     } 
 }
