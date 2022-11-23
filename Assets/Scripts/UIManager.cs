@@ -28,7 +28,7 @@ public class UIManager : MonoBehaviour
         GetGroupData();
         UpdateUI();
         OnSetGroupActive();
-    }
+    }    
 
     public void ChangeUIState() => menu.SetActive(!menu.activeSelf);
     
