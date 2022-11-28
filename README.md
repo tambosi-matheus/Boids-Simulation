@@ -11,7 +11,7 @@ You can also enable individual boids speed, acceleration and sight visualization
 - Game Engine: Unity
 - Target platform: PC
  
-[`Download App`](https://github.com/tambosi-matheus/GemNinja/raw/main/GemNinja.zip)
+[`Download App`](https://github.com/tambosi-matheus/Boids-Simulation/raw/main/Boids%20Simulation.zip)
 
 ### Programming Features
 - Collections management
